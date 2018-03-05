@@ -18,6 +18,7 @@
 
 - (void)beginTransaction:(void(^)(DataBaseManager *dataBase, BOOL *rollback))block;
 
+- (void)beginExecSQL:(void(^)(DataBaseManager *dataBase, BOOL *rollback))block;
 
 - (BOOL)dealSQL:(NSString *)sql;
 

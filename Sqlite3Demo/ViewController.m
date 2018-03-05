@@ -17,13 +17,19 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    [[DataBaseManager sharedManager] beginTransaction:^(DataBaseManager *dataBase, BOOL *rollback) {
-      *rollback = [dataBase dealSQL:@"insert into t_stu(id, name, age, score) values (1, 'sz', 18, 0)"];
-    }];
     
     [[DataBaseManager sharedManager] beginTransaction:^(DataBaseManager *dataBase, BOOL *rollback) {
-        NSMutableArray *result = [dataBase querySql:@"select * from t_stu"];
-        NSLog(@"result:%@",result);
+        for (int i = 0; i<10000; i++) {
+            [dataBase dealSQL:@"insert into t_stu( name, age, score) values ('sz', 18, 0)"];
+        }
+    }];
+    
+    
+   
+    [[DataBaseManager sharedManager] beginExecSQL:^(DataBaseManager *dataBase, BOOL *rollback) {
+        for (int i = 0; i<10000; i++) {
+            [dataBase dealSQL:@"insert into t_stu( name, age, score) values ('sz', 18, 0)"];
+        }
     }];
 }
 

@@ -55,12 +55,12 @@
     }
     
     _path = [kCachePath stringByAppendingPathComponent:self.dbName];
-    
+    NSLog(@"path:%@",_path);
     if(sqlite3_open(_path.UTF8String, &_db) != SQLITE_OK){
         NSLog(@"打开数据库失败");
         return;
     }
-    
+
     [self createTable];
 }
 
@@ -74,7 +74,8 @@
 }
 
 - (void)beginTransaction:(void(^)(DataBaseManager *dataBase, BOOL *rollback))block {
-    dispatch_async(_queue, ^{
+    dispatch_sync(_queue, ^{
+        CFAbsoluteTime time= CFAbsoluteTimeGetCurrent();
         BOOL shouldRollback = NO;
         
         [self beginTransaction];
@@ -86,7 +87,16 @@
         } else {
             [self commitTransaction];
         }
-        
+       NSLog(@"事务: %f",(CFAbsoluteTimeGetCurrent() - time));
+    });
+}
+
+- (void)beginExecSQL:(void(^)(DataBaseManager *dataBase, BOOL *rollback))block{
+    dispatch_sync(_queue, ^{
+        CFAbsoluteTime time= CFAbsoluteTimeGetCurrent();
+        BOOL shouldRollback = NO;
+        block(self,&shouldRollback);
+         NSLog(@"非事务: %f",(CFAbsoluteTimeGetCurrent() - time));
     });
 }
 
@@ -96,7 +106,7 @@
 }
 
 - (BOOL)dealSQL:(NSString *)sql{
-
+    
     BOOL result = sqlite3_exec(_db, sql.UTF8String, nil, nil, nil) == SQLITE_OK;
  
     return result;
@@ -222,6 +232,6 @@
  回滚事务
  */
 - (void)rollBackTransaction {
-    [self execSQL:@"commit transaction"];
+    [self execSQL:@"rollback transaction"];
 }
 @end
